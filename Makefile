@@ -1,14 +1,15 @@
+#----------------------------------------------------#
 CXX		  := g++
-CXX_FLAGS := -Wall -Wextra -std=c++17 -ggdb
+CXX_FLAGS := -std=c++20 -Wno-nullability-completeness
 
 BUILD	:= build
 SRC		:= src
 INCLUDE	:= -I/opt/homebrew/include -I/include
 LIB		:= /opt/homebrew/lib
 
-LIBRARIES	:= #-lcurl -lDataTable
+LIBRARIES	:= -lcurl #-lDataTable 
 EXECUTABLE	:= main
-
+#----------------------------------------------------#
 
 all: $(BUILD)/$(EXECUTABLE)
 
