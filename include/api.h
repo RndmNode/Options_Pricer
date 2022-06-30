@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <stdio.h>
-#include <curl/curl.h>
+#include <cpr/cpr.h>
 #include <string>
 
 class API{
@@ -12,8 +12,8 @@ class API{
         API(std::string api_key, std::string cert_path);
         ~API();
     private:
-        CURL *api_handle;
-        CURLcode result;
+        // CURL *api_handle;
+        // CURLcode result;
 
         std::string api_key;
         std::string base_url;
