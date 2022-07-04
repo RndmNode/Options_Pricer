@@ -1,2 +1,5 @@
 /.vscode
 build/*
+/data/*.csv
+/src/api.py
+/src/__pycache__

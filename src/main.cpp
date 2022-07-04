@@ -1,7 +1,16 @@
-#include "../include/api.h"
+#include <iostream>
+#include <string.h>
+#include <vector>
+
+std::vector<std::string> tickers{
+    "TSLA",
+    "IBM",
+    "APPL",
+    "F",
+    "MSFT"
+};
 
 int main (){
-    std::cout << "Hello World!\n";
-    
+
     return 0;
 }
