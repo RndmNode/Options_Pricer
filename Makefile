@@ -22,7 +22,8 @@ run: clean all
 $(BUILD)/$(EXECUTABLE): $(SRC)/*.cpp
 	$(CXX) $(CXX_FLAGS) $(INCLUDE) -L$(LIB) $^ -o $@ $(LIBRARIES)
 
-refresh:
+refresh_stock_data:
+	clear
 	$(PXX) $(SRC)/getStockData.py
 
 clean:
