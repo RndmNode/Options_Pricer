@@ -28,10 +28,11 @@ void get_tickers (){
 int main (){
     get_tickers();
 
-    std::vector<int> x = {1, 2, 3, 4, 5, 6, 7, 8, 9 ,10};
-    std::vector<int> y = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+    std::vector<int> x = tickers[0]->ticks;
+    std::vector<float> y = tickers[0]->close_prices;
 
     matplot::plot(x, y);
+    matplot::title(tickers[0]->symbol);
     matplot::show();
 
     return 0;

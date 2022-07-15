@@ -30,6 +30,9 @@ Ticker::Ticker(std::string name){
 void Ticker::get_CSV (){
     std::string filePath = "data/" + symbol + ".csv";
 
+    // variable to hold parsed line info
+    std::vector<std::string> parsed_line;
+
     // create file object and open
     std::fstream file;
     file.open(filePath, std::ios::in);
@@ -39,10 +42,24 @@ void Ticker::get_CSV (){
         // create string object to read lines into
         std::string line;
 
+        // read the first line that just has the header
+        getline(file, line);
+
         // save each line if there is content
         while (getline(file, line)){
-            if(line != "")
-                data.push_back(parse_line(line, ","));
+            if(line != ""){
+                // get the parsed info
+                parsed_line = parse_line(line, ",");
+
+                // save the parsed info into respective object attributes
+                ticks.push_back(std::stoi(parsed_line[0]));
+                dates.push_back(parsed_line[1]);
+                open_prices.push_back(std::stof(parsed_line[2]));
+                high_prices.push_back(std::stof(parsed_line[3]));
+                low_prices.push_back(std::stof(parsed_line[4]));
+                close_prices.push_back(std::stof(parsed_line[5]));
+                volumes.push_back(std::stol(parsed_line[6]));
+            }
         }
     }else{
         std::cout << "Could not open file!\n";
@@ -51,19 +68,25 @@ void Ticker::get_CSV (){
     // close file
     file.close();
 
-    // trim excess space from each line
-    for (auto& i : data)
-        for (auto& j : i)
-            boost::algorithm::trim(j);
+    // // trim excess space from each line
+    // for (auto& i : data)
+    //     for (auto& j : i)
+    //         boost::algorithm::trim(j);
 }
 
 void Ticker::print_data (int number_of_lines){
-    std::cout << "\n" << symbol << std::endl;
+    std::cout << "\n                           " << symbol << std::endl;
+    std::cout << "   Date        Open    High    Low     Close   Volume\n";
+    std::cout << "   ----------------------------------------------------\n";
 
     for (int i=0; i<number_of_lines; i++){
-        for (auto& j : data[i]){
-            std::cout << j << "  ";
-        }
+        std::cout << "   ";
+        std::cout << dates[i] << "  ";
+        std::cout << open_prices[i] << "  ";
+        std::cout << high_prices[i] << "  ";
+        std::cout << low_prices[i] << "  ";
+        std::cout << close_prices[i] << "  ";
+        std::cout << volumes[i] << "  ";
         std::cout << "\n";
     }
 }
