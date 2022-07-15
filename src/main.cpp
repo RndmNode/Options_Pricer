@@ -1,4 +1,5 @@
 #include "../include/ticker.h"
+#include <matplot/matplot.h>
 
 // global object to hold all tickers and their data
 std::vector<Ticker *> tickers;
@@ -27,11 +28,11 @@ void get_tickers (){
 int main (){
     get_tickers();
 
-    // print tickers one by one
-    for (auto i : tickers){
-        // print the symbol
-        i->print_data(10);
-    }
+    std::vector<int> x = {1, 2, 3, 4, 5, 6, 7, 8, 9 ,10};
+    std::vector<int> y = {10, 9, 8, 7, 6, 5, 4, 3, 2, 1};
+
+    matplot::plot(x, y);
+    matplot::show();
 
     return 0;
 }

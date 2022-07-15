@@ -6,10 +6,10 @@ PXX		  	:= python3
 
 BUILD	  	:= build
 SRC		  	:= src
-INCLUDE	  	:= -I/opt/homebrew/include -I/include #-I/opt/homebrew/lib/vcpkg/installed/arm64-osx/include
+INCLUDE	  	:= -I/opt/homebrew/include -I/include
 LIB		  	:= /opt/homebrew/lib
 
-LIBRARIES	:= # none yet
+LIBRARIES	:= -lmatplot
 EXECUTABLE	:= main
 #----------------------------------------------------#
 
