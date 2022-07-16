@@ -9,7 +9,7 @@ SRC		  	:= src
 INCLUDE	  	:= -I/opt/homebrew/include -I/include
 LIB		  	:= /opt/homebrew/lib
 
-LIBRARIES	:= -lmatplot
+LIBRARIES	:= -lmatplot -lpthread
 EXECUTABLE	:= main
 #----------------------------------------------------#
 

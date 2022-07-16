@@ -1,5 +1,6 @@
 #include "../include/ticker.h"
 #include <matplot/matplot.h>
+#include <thread>
 
 // global object to hold all tickers and their data
 std::vector<Ticker *> tickers;
@@ -14,7 +15,8 @@ void get_tickers (){
     if (file.is_open()){
         // create string object to read lines into
         std::string line;
-        // save each line if there is content
+        
+        // create new Ticker if there is a new line with content
         while (getline(file, line)){
             if(line != "")
                 boost::algorithm::trim(line);
@@ -25,15 +27,28 @@ void get_tickers (){
     file.close();
 }
 
+void plot_tickers(Ticker* ticker){
+    std::vector<int> x = ticker->ticks;
+    std::vector<float> y = ticker->close_prices;
+
+    matplot::plot(x, y);
+    matplot::title(ticker->symbol);
+    matplot::show();
+}
+
 int main (){
     get_tickers();
 
-    std::vector<int> x = tickers[0]->ticks;
-    std::vector<float> y = tickers[0]->close_prices;
+    std::vector<std::thread> threads;
 
-    matplot::plot(x, y);
-    matplot::title(tickers[0]->symbol);
-    matplot::show();
+    for (auto* i : tickers){
+        threads.push_back(std::thread(plot_tickers, i));
+    }
+
+    for (std::thread& t : threads){
+        if (t.joinable())
+            t.join();
+    }
 
     return 0;
 }
