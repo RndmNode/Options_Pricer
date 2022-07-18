@@ -1,6 +1,5 @@
-#include "../include/ticker.h"
+#include "../include/monte_carlo.h"
 #include <matplot/matplot.h>
-#include <thread>
 
 // global object to hold all tickers and their data
 std::vector<Ticker *> tickers;
@@ -39,16 +38,7 @@ void plot_tickers(Ticker* ticker){
 int main (){
     get_tickers();
 
-    std::vector<std::thread> threads;
-
-    for (auto* i : tickers){
-        threads.push_back(std::thread(plot_tickers, i));
-    }
-
-    for (std::thread& t : threads){
-        if (t.joinable())
-            t.join();
-    }
+    MonteCarloPricer monte(tickers[0]);
 
     return 0;
 }
