@@ -24,6 +24,7 @@ static std::vector<std::string> parse_line (std::string line, std::string delimi
 Ticker::Ticker(std::string name){
     symbol = name;
     get_CSV();
+    calculate_returns();
 }
 
 // open CSV file regarding to the ticker and parse data 
@@ -52,12 +53,12 @@ void Ticker::get_CSV (){
                 parsed_line = parse_line(line, ",");
 
                 // save the parsed info into respective object attributes
-                ticks.push_back(std::stoi(parsed_line[0]));
-                dates.push_back(parsed_line[1]);
-                open_prices.push_back(std::stof(parsed_line[2]));
-                high_prices.push_back(std::stof(parsed_line[3]));
-                low_prices.push_back(std::stof(parsed_line[4]));
-                close_prices.push_back(std::stof(parsed_line[5]));
+                dates.push_back(parsed_line[0]);
+                open_prices.push_back(roundf(std::stof(parsed_line[1]) * 100) / 100);
+                high_prices.push_back(roundf(std::stof(parsed_line[2]) * 100) / 100);
+                low_prices.push_back(roundf(std::stof(parsed_line[3]) * 100) / 100);
+                close_prices.push_back(roundf(std::stof(parsed_line[4]) * 100) / 100);
+                adj_close_prices.push_back(roundf(std::stof(parsed_line[5]) * 100) / 100);
                 volumes.push_back(std::stol(parsed_line[6]));
             }
         }
@@ -74,19 +75,32 @@ void Ticker::get_CSV (){
     //         boost::algorithm::trim(j);
 }
 
+void Ticker::calculate_returns(){
+    returns.push_back(0);
+
+    // calculate daily returns
+    for (int i=1; i<adj_close_prices.size(); i++){
+        float ret = roundf(((adj_close_prices[i] - 
+                             adj_close_prices[i-1])/
+                             adj_close_prices[i-1]) * 100) / 100;
+        returns.push_back(ret);
+    }
+}
+
 void Ticker::print_data (int number_of_lines){
     std::cout << "\n                           " << symbol << std::endl;
-    std::cout << "   Date        Open    High    Low     Close   Volume\n";
-    std::cout << "   ----------------------------------------------------\n";
+    std::cout << "   Date        Open    High    Low     Close     Adj Close   Volume\n";
+    std::cout << "   ----------------------------------------------------------------\n";
 
     for (int i=0; i<number_of_lines; i++){
         std::cout << "   ";
         std::cout << dates[i] << "  ";
-        std::cout << open_prices[i] << "  ";
-        std::cout << high_prices[i] << "  ";
-        std::cout << low_prices[i] << "  ";
-        std::cout << close_prices[i] << "  ";
-        std::cout << volumes[i] << "  ";
+        std::cout << open_prices[i] << "   ";
+        std::cout << high_prices[i] << "   ";
+        std::cout << low_prices[i] << "   ";
+        std::cout << close_prices[i] << "    ";
+        std::cout << adj_close_prices[i] << "    ";
+        std::cout << volumes[i] << "   ";
         std::cout << "\n";
     }
 }

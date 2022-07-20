@@ -27,10 +27,10 @@ void get_tickers (){
 }
 
 void plot_tickers(Ticker* ticker){
-    std::vector<int> x = ticker->ticks;
+    // std::vector<int> x = ticker->dates;
     std::vector<float> y = ticker->close_prices;
 
-    matplot::plot(x, y);
+    matplot::plot(y);
     matplot::title(ticker->symbol);
     matplot::show();
 }
@@ -38,7 +38,9 @@ void plot_tickers(Ticker* ticker){
 int main (){
     get_tickers();
 
-    MonteCarloPricer monte(tickers[0]);
+    MonteCarloPricer monte(tickers[1], tickers[0]);
+    std::cout << "Ticker: " << tickers[1]->symbol << 
+        " has a beta of: " << monte.m_beta << std::endl;
 
     return 0;
 }

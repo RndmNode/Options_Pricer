@@ -9,15 +9,20 @@
 // class for monte carlo method of option pricing
 class MonteCarloPricer{
     public:
-        MonteCarloPricer(Ticker* stock);
+        MonteCarloPricer(Ticker* ticker, Ticker* benchmark);
         ~MonteCarloPricer(){};
+        float m_beta;
     private:
         // attributes
-        Ticker* ticker;
-        float volatility;
+        Ticker* m_ticker;
+        Ticker* m_benchmark;
+        float m_correlation;
+        // float m_beta;
 
         // methods
-        void get_volatility();
+        float get_volatility(Ticker* t);
+        float get_correlation_coefficient(float ticker_std_dev, float bench_std_dev);
+        void get_beta();
 };
 
 #endif /* MONTECARLO_H */
