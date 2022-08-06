@@ -38,14 +38,6 @@ int main (){
     get_tickers();
 
     MonteCarloPricer monte(tickers[1], tickers[0]);
-    // std::set<std::vector<int>> my_set = {
-    //     {1, 2, 3, 4}, {2, 3, 4 ,5}, {4, 3, 2, 1}, {1, 2, 3, 4}, {1, 6, 8, 9}
-    // };
-
-    // std::cout << "size: " << my_set.size() << std::endl;
-
-    // matplot::plot(my_set);
-    // matplot::show();
 
     return 0;
 }
