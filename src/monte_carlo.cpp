@@ -3,8 +3,8 @@
 MonteCarloPricer::MonteCarloPricer(Ticker* ticker, Ticker* benchmark){
     m_ticker = ticker;
     m_benchmark = benchmark;
-    get_beta();
-    plot_simulation();
+    // get_beta();
+    // plot_simulation();
 }
 
 float MonteCarloPricer::get_volatility(Ticker* t){
@@ -104,5 +104,8 @@ void MonteCarloPricer::simulate(int num_sims, int days_to_expiry){
 void MonteCarloPricer::plot_simulation(){
     simulate(1000, 50);
     matplot::plot(sim_paths);
+    matplot::title(m_ticker->symbol);
+    matplot::xlabel("Days");
+    matplot::ylabel("Stock Price");
     matplot::show();
 }

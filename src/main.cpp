@@ -34,10 +34,29 @@ void plot_tickers(Ticker* ticker){
     matplot::show();
 }
 
+void run (){
+    std::vector<std::thread> threads;
+    std::vector<MonteCarloPricer *> pricers;
+
+    for (int i=1; i<tickers.size(); i++){
+        pricers.push_back(new MonteCarloPricer(tickers[i], tickers[0]));
+    }
+
+    for (auto p : pricers){
+        std::thread t (p->plot_simulation);
+        threads.push_back(t);
+    }
+
+    for (auto& t : threads){
+        t.join();
+    }
+}
+
 int main (){
     get_tickers();
 
-    MonteCarloPricer monte(tickers[1], tickers[0]);
+    // MonteCarloPricer monte(tickers[1], tickers[0]);
+    run();
 
     return 0;
 }

@@ -14,6 +14,7 @@ class MonteCarloPricer{
     public:
         MonteCarloPricer(Ticker* ticker, Ticker* benchmark);
         ~MonteCarloPricer(){};
+        void plot_simulation();
     private:
         // attributes
         Ticker* m_ticker;
@@ -27,7 +28,6 @@ class MonteCarloPricer{
         float get_correlation_coefficient(float ticker_std_dev, float bench_std_dev);
         void get_beta();
         void simulate(int num_sims, int days_to_expiry);
-        void plot_simulation();
 };
 
 #endif /* MONTECARLO_H */
