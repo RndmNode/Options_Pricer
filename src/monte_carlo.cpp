@@ -4,7 +4,7 @@ MonteCarloPricer::MonteCarloPricer(Ticker* ticker, Ticker* benchmark){
     m_ticker = ticker;
     m_benchmark = benchmark;
     // get_beta();
-    // plot_simulation();
+    plot_simulation();
 }
 
 float MonteCarloPricer::get_volatility(Ticker* t){
@@ -26,38 +26,38 @@ float MonteCarloPricer::get_volatility(Ticker* t){
     return ticker_std_dev;
 }
 
-float MonteCarloPricer::get_correlation_coefficient(float ticker_std_dev, float bench_std_dev){
-    float correlation;
-    float ticker_mean;
-    float bench_mean;
-    float covariance;
+// float MonteCarloPricer::get_correlation_coefficient(float ticker_std_dev, float bench_std_dev){
+//     float correlation;
+//     float ticker_mean;
+//     float bench_mean;
+//     float covariance;
 
-    // get mean daily returns
-    ticker_mean = (std::reduce(m_ticker->returns.begin(),m_ticker->returns.end(),0.0)) / m_ticker->returns.size();
-    bench_mean = (std::reduce(m_benchmark->returns.begin(),m_benchmark->returns.end(),0.0)) / m_benchmark->returns.size();
+//     // get mean daily returns
+//     ticker_mean = (std::reduce(m_ticker->returns.begin(),m_ticker->returns.end(),0.0)) / m_ticker->returns.size();
+//     bench_mean = (std::reduce(m_benchmark->returns.begin(),m_benchmark->returns.end(),0.0)) / m_benchmark->returns.size();
 
-    // calculate covariance
-    float running_sum;
-    for (int i=0; i<m_ticker->returns.size(); i++){
-        running_sum += (m_ticker->returns[i] - ticker_mean) * 
-                       (m_benchmark->returns[i] - bench_mean);
-    }
-    covariance = (running_sum / (m_ticker->returns.size() - 1));
+//     // calculate covariance
+//     float running_sum;
+//     for (int i=0; i<m_ticker->returns.size(); i++){
+//         running_sum += (m_ticker->returns[i] - ticker_mean) * 
+//                        (m_benchmark->returns[i] - bench_mean);
+//     }
+//     covariance = (running_sum / (m_ticker->returns.size() - 1));
 
-    // calculate correlation
-    correlation = covariance / (ticker_std_dev * bench_std_dev);
+//     // calculate correlation
+//     correlation = covariance / (ticker_std_dev * bench_std_dev);
 
-    return correlation;
-}
+//     return correlation;
+// }
 
-void MonteCarloPricer::get_beta(){
-    float ticker_std_dev = get_volatility(m_ticker);
-    float bench_std_dev = get_volatility(m_benchmark);
+// void MonteCarloPricer::get_beta(){
+//     float ticker_std_dev = get_volatility(m_ticker);
+//     float bench_std_dev = get_volatility(m_benchmark);
 
-    float correlation = get_correlation_coefficient(ticker_std_dev, bench_std_dev);
+//     float correlation = get_correlation_coefficient(ticker_std_dev, bench_std_dev);
 
-    m_beta = roundf((correlation * (ticker_std_dev/ bench_std_dev)) * 100) / 100;
-}
+//     m_beta = roundf((correlation * (ticker_std_dev/ bench_std_dev)) * 100) / 100;
+// }
 
 void MonteCarloPricer::simulate(int num_sims, int days_to_expiry){
     /*
@@ -79,7 +79,10 @@ void MonteCarloPricer::simulate(int num_sims, int days_to_expiry){
     float mu = (std::reduce(m_ticker->returns.begin(),m_ticker->returns.end(),0.0)) / m_ticker->returns.size();
     float sig = get_volatility(m_ticker);
     float dt = 1.0f/365.0f;
-    std::default_random_engine generator;
+
+    // random number generation
+    unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
     std::normal_distribution<float> random_n(0, 1);
     
     // calculate drift
@@ -102,7 +105,7 @@ void MonteCarloPricer::simulate(int num_sims, int days_to_expiry){
 }
 
 void MonteCarloPricer::plot_simulation(){
-    simulate(1000, 50);
+    simulate(10, 50);
     matplot::plot(sim_paths);
     matplot::title(m_ticker->symbol);
     matplot::xlabel("Days");

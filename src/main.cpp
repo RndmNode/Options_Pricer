@@ -35,28 +35,21 @@ void plot_tickers(Ticker* ticker){
 }
 
 void run (){
-    std::vector<std::thread> threads;
-    std::vector<MonteCarloPricer *> pricers;
+    unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator (seed);
+    std::normal_distribution<float> random_n(0, 1);
 
-    for (int i=1; i<tickers.size(); i++){
-        pricers.push_back(new MonteCarloPricer(tickers[i], tickers[0]));
-    }
+    std::cout << "some Normal-distributed(0.0,1.0) results:" << std::endl;
+    for (int i=0; i<10; ++i)
+        std::cout << random_n(generator) << std::endl;
 
-    for (auto p : pricers){
-        std::thread t (p->plot_simulation);
-        threads.push_back(t);
-    }
-
-    for (auto& t : threads){
-        t.join();
-    }
 }
 
 int main (){
     get_tickers();
 
-    // MonteCarloPricer monte(tickers[1], tickers[0]);
-    run();
+    MonteCarloPricer monte(tickers[1], tickers[0]);
+    // run();
 
     return 0;
 }
