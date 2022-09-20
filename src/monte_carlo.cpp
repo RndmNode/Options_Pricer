@@ -1,13 +1,13 @@
 #include "../include/monte_carlo.h"
 
-MonteCarloPricer::MonteCarloPricer(Ticker* ticker, Ticker* benchmark){
+MonteCarloPricer::MonteCarloPricer (Ticker* ticker, Ticker* benchmark){
     m_ticker = ticker;
     m_benchmark = benchmark;
-    // get_beta();
     plot_simulation();
 }
 
-float MonteCarloPricer::get_volatility(Ticker* t){
+// getting volatility via standard deviation
+float MonteCarloPricer::get_volatility (Ticker* t){
     // instantiate holder variables
     float mean;
     std::vector<float> deviation_squared;
@@ -26,40 +26,43 @@ float MonteCarloPricer::get_volatility(Ticker* t){
     return ticker_std_dev;
 }
 
-// float MonteCarloPricer::get_correlation_coefficient(float ticker_std_dev, float bench_std_dev){
-//     float correlation;
-//     float ticker_mean;
-//     float bench_mean;
-//     float covariance;
+// function used for threaded simulation returns a set to be merged with other sets to create the entire simulation
+static inline std::set<std::vector<float>> simulation_thread (int num_sims, int num_days, float s0, float nu, float sig, float dt){
+    std::set<std::vector<float>> partial_sim;
+    float price_today = s0;
+    float S;    // price one step in the future
 
-//     // get mean daily returns
-//     ticker_mean = (std::reduce(m_ticker->returns.begin(),m_ticker->returns.end(),0.0)) / m_ticker->returns.size();
-//     bench_mean = (std::reduce(m_benchmark->returns.begin(),m_benchmark->returns.end(),0.0)) / m_benchmark->returns.size();
+    // random number generation
+    unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+    std::default_random_engine generator(seed);
+    std::normal_distribution<float> random_n(0, 1);
 
-//     // calculate covariance
-//     float running_sum;
-//     for (int i=0; i<m_ticker->returns.size(); i++){
-//         running_sum += (m_ticker->returns[i] - ticker_mean) * 
-//                        (m_benchmark->returns[i] - bench_mean);
-//     }
-//     covariance = (running_sum / (m_ticker->returns.size() - 1));
+    // simulate
+    for(int i=0; i<num_sims; i++){
+        // push back today's price to start the simulation
+        std::vector<float> sim;
+        s0 = price_today;
+        sim.push_back(s0);
 
-//     // calculate correlation
-//     correlation = covariance / (ticker_std_dev * bench_std_dev);
+        // simulate all days till expiry
+        for(int j=0; j<num_days; j++){
+            // simulate price for "tomorrow"
+            S = s0 * exp(nu + sig*sqrt(dt)*random_n(generator));
+            sim.push_back(S);
+            // reset "today"
+            s0 = sim.back();
+        }
+        partial_sim.insert(sim);
+    }
 
-//     return correlation;
+    return partial_sim;
+}
+
+// static inline int square (int a, int b){
+//     return a * b;
 // }
 
-// void MonteCarloPricer::get_beta(){
-//     float ticker_std_dev = get_volatility(m_ticker);
-//     float bench_std_dev = get_volatility(m_benchmark);
-
-//     float correlation = get_correlation_coefficient(ticker_std_dev, bench_std_dev);
-
-//     m_beta = roundf((correlation * (ticker_std_dev/ bench_std_dev)) * 100) / 100;
-// }
-
-void MonteCarloPricer::simulate(int num_sims, int days_to_expiry){
+void MonteCarloPricer::simulate (int num_sims, int days_to_expiry, bool threaded){
     /*
     Function to generate sample paths for assets assuming geometric brownian motion
 
@@ -80,35 +83,66 @@ void MonteCarloPricer::simulate(int num_sims, int days_to_expiry){
     float sig = get_volatility(m_ticker);
     float dt = 1.0f/365.0f;
 
-    // random number generation
-    unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator(seed);
-    std::normal_distribution<float> random_n(0, 1);
-    
     // calculate drift
     float nu = mu - sig*sig/2;
-    std::cout << std::setprecision(2) << std::fixed;
-    // simulate
-    for(int i=0; i<num_sims; i++){
-        // push back today's price to start the simulation
-        std::vector<float> sim;
-        s0 = m_ticker->adj_close_prices.back();
-        sim.push_back(s0);
-        for(int j=0; j<days_to_expiry; j++){
-            float r = random_n(generator);
-            S = s0 * exp(nu + sig*sqrt(dt)*r);
-            sim.push_back(S);
-            s0 = sim.back();
+
+    if (!threaded){
+        // random number generation
+        unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
+        std::default_random_engine generator(seed);
+        std::normal_distribution<float> random_n(0, 1);
+        
+        // simulate
+        for(int i=0; i<num_sims; i++){
+            // push back today's price to start the simulation
+            std::vector<float> sim;
+            s0 = m_ticker->adj_close_prices.back();
+            sim.push_back(s0);
+
+            // simulate all days till expiry
+            for(int j=0; j<days_to_expiry; j++){
+                // simulate price for "tomorrow"
+                S = s0 * exp(nu + sig*sqrt(dt)*random_n(generator));
+                sim.push_back(S);
+                // reset "today"
+                s0 = sim.back();
+            }
+            sim_paths.insert(sim);
         }
-        sim_paths.insert(sim);
+    }else{ // multithreaded
+        
+        // vector of the threads
+        std::vector<std::future<std::set<std::vector<float>>>> futures;
+        // std::vector<std::future<int>> futures;
+        s0 = m_ticker->adj_close_prices.back();
+
+        int threads = 50;
+        // create all threads to allow for concurrent simulations
+        for (int i=0; i<50; i++){
+            // std::future f = std::async(std::launch::async, simulation_thread, num_sims/5, days_to_expiry, s0, nu, sig, dt);
+            futures.push_back(std::async(std::launch::async, simulation_thread, num_sims/threads, days_to_expiry, s0, nu, sig, dt));
+        }
+
+        // merge all sim paths into the main sim path
+        for (auto & future : futures){
+            sim_paths.merge(future.get());
+        }
+
     }
 }
 
-void MonteCarloPricer::plot_simulation(){
-    simulate(10, 50);
-    matplot::plot(sim_paths);
-    matplot::title(m_ticker->symbol);
-    matplot::xlabel("Days");
-    matplot::ylabel("Stock Price");
-    matplot::show();
+void MonteCarloPricer::plot_simulation (){
+    // start simulation timer ---------------
+    printf("Starting non-threaded\n");
+    simulate(10000, 50, false);
+
+    // end simulation timer ---------------
+    printf("Starting threaded\n");
+    simulate(5000, 50, true);
+
+    // matplot::plot(sim_paths);
+    // matplot::title(m_ticker->symbol);
+    // matplot::xlabel("Days");
+    // matplot::ylabel("Stock Price");
+    // matplot::show();
 }

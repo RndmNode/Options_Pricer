@@ -34,22 +34,16 @@ void plot_tickers(Ticker* ticker){
     matplot::show();
 }
 
-void run (){
-    unsigned int seed = std::chrono::system_clock::now().time_since_epoch().count();
-    std::default_random_engine generator (seed);
-    std::normal_distribution<float> random_n(0, 1);
-
-    std::cout << "some Normal-distributed(0.0,1.0) results:" << std::endl;
-    for (int i=0; i<10; ++i)
-        std::cout << random_n(generator) << std::endl;
-
+int add ( int a ){
+    return a + 1;
 }
 
 int main (){
     get_tickers();
 
     MonteCarloPricer monte(tickers[1], tickers[0]);
-    // run();
+    auto future = std::async(std::launch::async, add, 4);
+    // std::cout << "future return value: " << future.get() << std::endl;
 
     return 0;
 }
