@@ -42,8 +42,6 @@ int main (){
     get_tickers();
 
     MonteCarloPricer monte(tickers[1], tickers[0]);
-    auto future = std::async(std::launch::async, add, 4);
-    // std::cout << "future return value: " << future.get() << std::endl;
 
     return 0;
 }

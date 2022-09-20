@@ -2,6 +2,7 @@
 #define MONTECARLO_H
 
 #include "ticker.h"
+
 #include <time.h>
 #include <numeric>
 #include <cmath>

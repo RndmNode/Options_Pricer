@@ -54,7 +54,6 @@ static inline std::set<std::vector<float>> simulation_thread (int num_sims, int 
         }
         partial_sim.insert(sim);
     }
-
     return partial_sim;
 }
 
@@ -110,13 +109,12 @@ void MonteCarloPricer::simulate (int num_sims, int days_to_expiry, bool threaded
             sim_paths.insert(sim);
         }
     }else{ // multithreaded
-        
         // vector of the threads
         std::vector<std::future<std::set<std::vector<float>>>> futures;
         // std::vector<std::future<int>> futures;
         s0 = m_ticker->adj_close_prices.back();
 
-        int threads = 50;
+        int threads = 1000;
         // create all threads to allow for concurrent simulations
         for (int i=0; i<50; i++){
             // std::future f = std::async(std::launch::async, simulation_thread, num_sims/5, days_to_expiry, s0, nu, sig, dt);
@@ -127,18 +125,33 @@ void MonteCarloPricer::simulate (int num_sims, int days_to_expiry, bool threaded
         for (auto & future : futures){
             sim_paths.merge(future.get());
         }
-
     }
 }
 
+#include <chrono>
+
 void MonteCarloPricer::plot_simulation (){
+
+    int num_sims = 100000;
+
     // start simulation timer ---------------
     printf("Starting non-threaded\n");
-    simulate(10000, 50, false);
+    auto start = std::chrono::high_resolution_clock::now();
+    simulate(num_sims, 50, false);
+    auto stop = std::chrono::high_resolution_clock::now();
+    auto duration1 = duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "Time for one thread: " << duration1.count() << std::endl;
 
     // end simulation timer ---------------
     printf("Starting threaded\n");
-    simulate(5000, 50, true);
+    start = std::chrono::high_resolution_clock::now();
+    simulate(num_sims, 50, true);
+    stop = std::chrono::high_resolution_clock::now();
+    auto duration2 = duration_cast<std::chrono::microseconds>(stop - start);
+    std::cout << "Time for multi-threads: " << duration2.count() << std::endl;
+
+    std::cout << "Time saved (micros): " << duration1.count() - duration2.count() << std::endl;
+    std::cout << "Time saved (%): " << (1.0f - ((float) duration2.count() / (float) duration1.count())) * 100.0f << std::endl;
 
     // matplot::plot(sim_paths);
     // matplot::title(m_ticker->symbol);
